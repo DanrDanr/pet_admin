@@ -13,14 +13,10 @@
           <el-option label="已停用" value="1" />
         </el-select>
       </el-form-item>
-      <el-form-item label="上级部门">
-        <el-tag
-          v-for="tag in tags"
-          :key="tag.name"
-          closable
-          :type="tag.type">
-          {{tag.name}}
-        </el-tag>
+      <el-form-item label="部门名称">
+        <el-select v-model="value" clearable placeholder="请选择">
+          <el-input v-model="form.parent.name" />
+        </el-select>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="onSubmit">确定</el-button>
@@ -38,7 +34,8 @@ export default {
       form: {
         sn: '',
         name: '',
-        state: ''
+        state: '',
+        parent: []
       },
       tags: []
     }

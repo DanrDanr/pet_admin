@@ -7,10 +7,6 @@ export function getList(params) {
     params
   })
 }
-export function tableData(query) {
-  return request({
-    url: '/api/employee/list',
-    method: 'get',
-    params: query
-  })
+
+export class tableData {
 }
