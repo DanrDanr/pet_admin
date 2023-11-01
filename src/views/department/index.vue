@@ -47,10 +47,7 @@
       <el-pagination
         :current-page="page"
         :page-size="size"
-        :page-sizes="pageSizes"
-        layout="total, sizes, prev, pager, next, jumper"
         :total="total"
-        @size-change="sizeChange"
         @current-change="currentChange"
       />
     </div>
@@ -72,9 +69,10 @@ export default {
         children: 'children',
         label: 'name'
       },
-      tableData: [
-
-      ]
+      tableData: [],
+      page: '',
+      size: '',
+      total: ''
     }
   },
   watch: {
@@ -101,11 +99,19 @@ export default {
     },
 
     fetchData() {
+      const params = {
+        page: this.page,
+        size: this.size
+      }
       this.listLoading = true
-      tableData().then(response => {
+      tableData(params).then(response => {
         this.data = response.data
         this.tableData = this.data
       })
+    },
+    currentChange(page) {
+      this.page = page
+      this.fetchData()
     },
     toAddDepartmentPage() {
       const r = this.$refs.tree2.getCurrentNode()
