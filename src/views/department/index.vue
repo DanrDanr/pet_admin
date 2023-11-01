@@ -23,46 +23,36 @@
         <el-button icon="el-icon-plus">新增人员</el-button>
         <el-button icon="el-icon-delete">批量删除</el-button>
       </div>
-      <el-table
-        v-loading="listLoading"
-        :data="list"
-        element-loading-text="Loading"
-        border
-        fit
-        highlight-current-row
-      >
-        <el-table-column align="center" label="ID" width="95">
-          <template slot-scope="scope">
-            {{ scope.$index }}
-          </template>
-        </el-table-column>
-        <el-table-column label="Title">
-          <template slot-scope="scope">
-            {{ scope.row.title }}
-          </template>
-        </el-table-column>
-        <el-table-column label="Author" width="110" align="center">
-          <template slot-scope="scope">
-            <span>{{ scope.row.author }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="Pageviews" width="110" align="center">
-          <template slot-scope="scope">
-            {{ scope.row.pageviews }}
-          </template>
-        </el-table-column>
-        <el-table-column class-name="status-col" label="Status" width="110" align="center">
-          <template slot-scope="scope">
-            <el-tag :type="scope.row.status | statusFilter">{{ scope.row.status }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column align="center" prop="created_at" label="Display_time" width="200">
-          <template slot-scope="scope">
-            <i class="el-icon-time" />
-            <span>{{ scope.row.display_time }}</span>
-          </template>
+      <el-table :data="tableData" border>
+        <el-table-column label="序号" type="index" width="50" />
+        <el-table-column prop="username" label="用户名" width="180" />
+        <el-table-column prop="email" label="邮箱" width="180" />
+        <el-table-column prop="phone" label="手机号码" width="180"/>
+        <el-table-column prop="age" label="年龄" width="180" />
+        <el-table-column prop="state" label="状态" width="180"/>
+        <el-table-column prop="did" label="所属部门" width="180"/>
+        <el-table-column label="操作" width="180">
+          <el-button
+            size="mini"
+            @click="handleEdit()"
+          >编辑</el-button>
+          <el-button
+            size="mini"
+            type="danger"
+            @click="handleDelete()"
+          >删除</el-button>
         </el-table-column>
       </el-table>
+
+      <el-pagination
+        :current-page="page"
+        :page-size="size"
+        :page-sizes="pageSizes"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total"
+        @size-change="sizeChange"
+        @current-change="currentChange"
+      />
     </div>
   </div>
 
@@ -70,7 +60,7 @@
 
 <script>
 import { list } from '@/api/department'
-import { getList } from '@/api/table'
+import { tableData } from '@/api/table'
 import { deleteDepartment } from '@/api/department'
 
 export default {
@@ -81,7 +71,10 @@ export default {
       defaultProps: {
         children: 'children',
         label: 'name'
-      }
+      },
+      tableData: [
+
+      ]
     }
   },
   watch: {
@@ -109,9 +102,9 @@ export default {
 
     fetchData() {
       this.listLoading = true
-      getList().then(response => {
-        this.list = response.data.items
-        this.listLoading = false
+      tableData().then(response => {
+        this.data = response.data
+        this.tableData = this.data
       })
     },
     toAddDepartmentPage() {
@@ -153,16 +146,23 @@ export default {
               this.$message.error('部门删除失败')
             })
         })
+    },
+    handleEdit() {
+
+    },
+    handleDelete() {
+
     }
   }
 }
 </script>
 
 <style scoped>
-.sidebar-action{
+.sidebar-action {
   margin-bottom: 16px;
   margin-top: 18px;
 }
+
 .app-container {
   flex: 1;
   display: flex;
@@ -170,14 +170,16 @@ export default {
   font-size: 14px;
   padding-right: 8px;
 }
-.left-block{
+
+.left-block {
   width: 300px;
   flex-grow: 1;
   margin-left: 32px;
   margin-right: 32px;
   border-right: 2px solid gainsboro;
 }
-.right-block{
+
+.right-block {
   flex-grow: 2;
 }
 </style>
