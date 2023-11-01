@@ -13,9 +13,15 @@
           <el-option label="已停用" value="1" />
         </el-select>
       </el-form-item>
-      <el-form-item label="部门名称">
-        <el-select v-model="value" clearable placeholder="请选择">
-          <el-input v-model="form.parent.name" />
+      <el-form-item label="所属部门">
+        <el-select v-model="form.options.id" clearable placeholder="请选择" @focus="getChoiceList">
+          <el-option
+            v-for="item in options"
+            :key="item.id"
+            :label="item.name"
+            :value="item.name"
+          >
+          </el-option>
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -27,7 +33,7 @@
 </template>
 
 <script>
-import { createDepartment } from '@/api/department'
+import { createDepartment, getExChoiceListApi } from '@/api/department'
 export default {
   data() {
     return {
@@ -35,26 +41,23 @@ export default {
         sn: '',
         name: '',
         state: '',
-        parent: []
-      },
-      tags: []
+        parent: [],
+        options: []
+      }
     }
   },
-  parentDepartment: null,
   created() {
-    this.parentDepartment = this.$route.params.data
-    console.log(this.parentDepartment)
-    if (!this.parentDepartment) {
-      this.tags.push({
-        name: '暂未选择'
-      })
-    } else {
-      this.tags.push({
-        name: this.parentDepartment['name']
-      })
-    }
+    this.getChoiceList()
   },
   methods: {
+    getChoiceList() {
+      this.listLoading = true
+      getExChoiceListApi().then(Response => {
+        this.data = Response.data
+        console.log(this.data)
+        this.options = this.data
+      })
+    },
     onSubmit() {
       this.$message('submit!')
       console.log(this.form)

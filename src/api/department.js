@@ -24,3 +24,10 @@ export function deleteDepartment(params) {
     params
   })
 }
+export function getExChoiceListApi(query) {
+  return request({
+    url: '/api/department/type',
+    method: 'get',
+    params: query
+  })
+}

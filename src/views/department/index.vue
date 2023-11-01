@@ -21,7 +21,6 @@
     <div class="right-block">
       <div class="sidebar-action">
         <el-button icon="el-icon-plus" @click="dialogFormVisible = true">新增人员</el-button>
-        <!--        <el-button icon="el-icon-delete">批量删除</el-button>-->
       </div>
       <el-table :data="tableData" border>
         <el-table-column label="序号" type="index" width="50" />
@@ -32,15 +31,10 @@
         <el-table-column prop="state" label="状态" width="180" />
         <el-table-column prop="did" label="所属部门" width="180" />
         <el-table-column label="操作" width="180">
-          <el-button
-            size="mini"
-            @click.native.prevent="handleEdit(scope.row)"
-          >编辑</el-button>
-          <el-button
-            size="mini"
-            type="danger"
-            @click="handleDelete()"
-          >删除</el-button>
+          <template slot-scope="scope">
+            <el-button size="mini" @click.native.prevent="handleEdit(scope.row)">编辑</el-button>
+            <el-button size="mini" type="danger" @click.native.prevent="handleDelete(scope.row)">删除</el-button>
+          </template>
         </el-table-column>
       </el-table>
       <el-pagination
@@ -51,28 +45,37 @@
       />
 
       <div>
-        <el-dialog title="新增人员" :visible.sync="dialogFormVisible">
-          <el-form :model="form">
+        <el-dialog class="employee" :title="formTitle" :visible.sync="dialogFormVisible">
+          <el-form :model="form" ref="formRef">
             <el-form-item label="名字" :label-width="formLabelWidth">
-              <el-input v-model="form.username" autocomplete="off" />
+              <el-input v-model="form.username" :readonly="false" :disabled="false" autocomplete="off"  value="name"/>
             </el-form-item>
             <el-form-item label="密码" :label-width="formLabelWidth">
-              <el-input v-model="form.password" autocomplete="off" />
+              <el-input v-model="form.password" :readonly="false" :disabled="false" autocomplete="off" />
             </el-form-item>
             <el-form-item label="email" :label-width="formLabelWidth">
-              <el-input v-model="form.email" autocomplete="off" />
+              <el-input v-model="form.email" :readonly="false" :disabled="false" autocomplete="off" />
             </el-form-item>
             <el-form-item label="phone" :label-width="formLabelWidth">
-              <el-input v-model="form.phone" autocomplete="off" />
+              <el-input v-model="form.phone" :readonly="false" :disabled="false" autocomplete="off" />
             </el-form-item>
             <el-form-item label="年龄" :label-width="formLabelWidth">
-              <el-input v-model="form.age" autocomplete="off" />
+              <el-input v-model="form.age" :readonly="false" :disabled="false" autocomplete="off" />
             </el-form-item>
-            <el-form-item label="部门id" :label-width="formLabelWidth">
+            <el-form-item label="所属部门" :label-width="formLabelWidth">
+<!--              <el-select v-model="form.options.id" clearable placeholder="请选择" @focus="getChoiceList">-->
+<!--                <el-option-->
+<!--                  v-for="item in options"-->
+<!--                  :key="item.id"-->
+<!--                  :label="item.name"-->
+<!--                  :value="item.name"-->
+<!--                >-->
+<!--                </el-option>-->
+<!--              </el-select>-->
               <el-input v-model="form.did" autocomplete="off" />
             </el-form-item>
             <el-form-item label="状态" :label-width="formLabelWidth">
-              <el-select v-model="form.state" placeholder="请选择状态">
+              <el-select v-model="form.state" :readonly="false" :disabled="false" placeholder="请选择状态">
                 <el-option label="在职" value="0" />
                 <el-option label="离职" value="1" />
               </el-select>
@@ -86,13 +89,11 @@
       </div>
     </div>
   </div>
-
 </template>
 
 <script>
-import { list } from '@/api/department'
-import { addEmployee, tableData } from '@/api/employee'
-import { deleteDepartment } from '@/api/department'
+import { deleteDepartment, list } from '@/api/department'
+import { addEmployee, deleteEmployee, tableData, updateEmployee } from '@/api/employee'
 
 export default {
   data() {
@@ -103,6 +104,7 @@ export default {
         children: 'children',
         label: 'name'
       },
+      options: [],
       tableData: [],
       dialogFormVisible: false,
       form: {
@@ -149,6 +151,7 @@ export default {
       this.listLoading = true
       tableData(params).then(response => {
         this.data = response.data
+        console.log(this.data)
         this.tableData = this.data
       })
     },
@@ -200,7 +203,6 @@ export default {
     },
 
     add() {
-      this.$message('submit!')
       console.log(this.form)
       const requestData = {
         username: this.form.username,
@@ -211,20 +213,62 @@ export default {
         age: this.form.age,
         did: this.form.did
       }
-      addEmployee(requestData).then(response => {
-        console.log('requestData:', requestData)
+      const employeeId = this.form.id
+      if (employeeId) {
+        // Call the API to update the employee data
+        updateEmployee(requestData).then(response => {
+          if (response['resultCode'] === 200) {
+            this.dialogFormVisible = false
+            this.fetchData()
+            this.$message.success('人员信息修改成功')
+          } else {
+            this.$message.error(response['message'])
+          }
+        }).catch(error => {
+          console.error('人员信息修改失败', error)
+          this.$message.error('人员信息修改失败')
+        })
+      } else {
+        addEmployee(requestData).then(response => {
+          console.log('requestData:', requestData)
+          if (response['resultCode'] === 200) {
+            this.dialogFormVisible = false
+            this.$router.push({ path: '/department/index' })
+          } else {
+            this.$message(response['message'])
+          }
+        }).catch(error => {
+          console.error('人员添加失败', error)
+          this.$message.error('人员添加失败')
+        })
+      }
+    },
+    handleEdit(row) {
+      this.formTitle = '修改人员信息'
+      // 设置表单字段的初始值
+      this.form.username = row.username
+      this.form.password = row.password
+      this.form.email = row.email
+      this.form.phone = row.phone
+      this.form.age = row.age
+      this.form.state = row.state
+      this.form.did = row.did
+      this.dialogFormVisible = true
+    },
+    handleDelete(row) {
+      const id = row.id
+      deleteEmployee({ id: id }).then(response => {
+        console.log('id' + id)
         if (response['resultCode'] === 200) {
+          this.fetchData()
           this.$router.push({ path: '/department/index' })
         } else {
           this.$message(response['message'])
         }
+      }).catch(error => {
+        console.error('人员删除失败', error)
+        this.$message.error('人员删除失败')
       })
-    },
-    handleEdit() {
-
-    },
-    handleDelete() {
-
     }
   }
 }
