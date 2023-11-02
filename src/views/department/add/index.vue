@@ -14,12 +14,12 @@
         </el-select>
       </el-form-item>
       <el-form-item label="所属部门">
-        <el-select v-model="form.options.id" clearable placeholder="请选择" @focus="getChoiceList">
+        <el-select v-model="options.id" clearable placeholder="请选择" @focus="getChoiceList">
           <el-option
             v-for="item in options"
             :key="item.id"
             :label="item.name"
-            :value="item.name"
+            :value="item.id"
           >
           </el-option>
         </el-select>
@@ -41,9 +41,9 @@ export default {
         sn: '',
         name: '',
         state: '',
-        parent: [],
-        options: []
-      }
+        parent: []
+      },
+      options: []
     }
   },
   created() {
@@ -66,7 +66,7 @@ export default {
         name: this.form.name,
         state: this.form.state,
         parent: {
-          id: this.parentDepartment['id']
+          id: this.options.id
         }
       }
       createDepartment(requestData).then(response => {

@@ -22,11 +22,11 @@ export function deleteEmployee(data) {
   })
 }
 
-export function updateEmployee(params) {
+export function updateEmployee(data) {
   return request({
     url: '/api/employee/update',
     method: 'post',
-    params
+    data
   })
 }
 
